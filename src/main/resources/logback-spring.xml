@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+	​
+	<springProperty scope="context" name="springAppName" source="spring.application.name"/>
+	<!-- Example for logging into the build folder of your project -->
+	<property name="LOG_FILE" value="${BUILD_FOLDER:-build}/${springAppName}"/>​
+
+	<!-- You can override this to have a custom pattern -->
+	<property name="CONSOLE_LOG_PATTERN"
+			  value="%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} ${PID:- } --- [%15.15t] %-40.40logger{39} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
+
+	<property name="LOG_HOME" value="./log/francis"/>
+
+	<!-- Appender to log to console -->
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<!-- Minimum logging level to be presented in the console logs-->
+			<level>DEBUG</level>
+		</filter>
+		<encoder>
+			<pattern>${CONSOLE_LOG_PATTERN}</pattern>
+			<charset>UTF-8</charset>
+		</encoder>
+	</appender>
+
+	<!-- Appender to log to file -->​
+	<appender name="flatfile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_HOME}/francis.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- 根据实际情况配置 -->
+			<fileNamePattern>${LOG_HOME}/francis.%d{yyyy-MM-dd}.gz</fileNamePattern>
+			<maxHistory>7</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>${CONSOLE_LOG_PATTERN}</pattern>
+			<charset>UTF-8</charset>
+		</encoder>
+	</appender>
+	​
+	<!-- Appender to log to file in a JSON format -->
+	<appender name="logstash" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!-- filebeat采集的就是这里配置的json日志-->
+		<file>${LOG_HOME}/${LOG_FILE}.json</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- 根据实际情况配置 -->
+			<fileNamePattern>${LOG_HOME}/${LOG_FILE}.json.%d{yyyy-MM-dd}.gz</fileNamePattern>
+			<maxHistory>7</maxHistory>
+		</rollingPolicy>
+		<encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+			<providers>
+				<timestamp>
+					<timeZone>UTC</timeZone>
+				</timestamp>
+				<pattern>
+					<!-- 这里配置的是输出到json文件中的内容，logstash.conf的filter可对这些字段做出处理 -->
+					<pattern>
+						{
+						"logLevel": "%level",
+						"appName": "${springAppName:-}",
+						"traceId": "%X{X-B3-TraceId:-}",
+						"spanId": "%X{X-B3-SpanId:-}",
+						"parentId": "%X{X-B3-ParentSpanId:-}",
+						"exportable": "%X{X-Span-Export:-}",
+						"pid": "${PID:-}",
+						"thread": "%thread",
+						"className": "%logger{40}",
+						"rest": "%message",
+						"stackTrace": "%exception{10}"
+						}
+					</pattern>
+				</pattern>
+			</providers>
+		</encoder>
+	</appender>
+	​
+	<!-- 可同时添加DEBUG、ERROR级别 -->
+	<root level="INFO">
+		<appender-ref ref="console"/>
+		<appender-ref ref="logstash"/>
+		<appender-ref ref="flatfile"/>
+	</root>
+</configuration>
