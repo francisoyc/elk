@@ -1,12 +1,12 @@
 package com.example.demo.controller;
 
+import com.example.demo.annotation.RoleAuth;
 import com.example.demo.bean.Student;
 import com.example.demo.service.StudentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -18,10 +18,11 @@ public class StudentController {
     private StudentService service;
 
     @RequestMapping("/query")
-    public Student query(@RequestParam("no")String no, @RequestParam("age")Integer age) {
+    @RoleAuth(value = {"admin", "super"})
+    public Student query(Student stu) {
         log.info("all students = {}", service.getStudentList());
-        log.debug("update num = {}", service.updateByNo(no, age));
-        Student student = service.getStudentByNo(no);
+        log.debug("update num = {}", service.updateByNo(stu.getNo(), stu.getAge()));
+        Student student = service.getStudentByNo(stu.getNo());
         log.error("student = {}", student);
         return student;
     }

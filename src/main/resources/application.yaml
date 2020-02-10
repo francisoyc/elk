@@ -7,6 +7,10 @@ spring:
     url: jdbc:mysql://192.168.196.1:3306/francis?useSSL=false&serverTimezone=Hongkong&characterEncoding=utf-8
     username: root
     password: 123456
+  # 日期格式化
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
 
 #mybatis.dao-locations=classpath:mapping/*.xml
 mybatis:
@@ -19,3 +23,6 @@ mybatis:
 logging:
   level:
     com.example.demo.dao: debug
+
+francis:
+  value: 123456

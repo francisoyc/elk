@@ -4,7 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
 
 /**
  * 日志切面类，拦截所有controller，打印输入和输出内容
@@ -13,19 +16,22 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class LogAspect {
+    @Value("${francis.value}")
+    private String value;
 
     @Pointcut("execution(* com.example.demo.controller.*.*(..))")
     private void controllerMethodAspect() {
     }
 
     @Before("controllerMethodAspect()")
-    public void doBefore(JoinPoint joinPoint) {
+    public void doBefore(JoinPoint joinPoint) throws IOException {
         // 请求参数可以打印更详细的内容，这里只是测试代码
         log.info("{} 请求开始，请求参数：{}", getTarget(joinPoint), joinPoint.getArgs());
     }
 
     @AfterReturning(returning="obj", pointcut = "controllerMethodAspect()")
     public void doAfter(JoinPoint joinPoint, Object obj) {
+        System.out.println("===================" + value);
         log.info("{} 请求结束，返回内容={}", getTarget(joinPoint), obj);
     }
 
@@ -38,4 +44,5 @@ public class LogAspect {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         return joinPoint.getTarget().getClass().getName() + "." + signature.getName();
     }
+
 }

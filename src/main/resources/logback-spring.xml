@@ -3,6 +3,8 @@
 	<include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 	​
 	<springProperty scope="context" name="springAppName" source="spring.application.name"/>
+	<springProperty scope="context" name="instanceIp" source="spring.cloud.client.ip-address" />
+
 	<!-- Example for logging into the build folder of your project -->
 	<property name="LOG_FILE" value="${BUILD_FOLDER:-build}/${springAppName}"/>​
 
@@ -10,7 +12,7 @@
 	<property name="CONSOLE_LOG_PATTERN"
 			  value="%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} ${PID:- } --- [%15.15t] %-40.40logger{39} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
 
-	<property name="LOG_HOME" value="./log/francis"/>
+	<property name="LOG_HOME" value="./log/francis/"/>
 
 	<!-- Appender to log to console -->
 	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
@@ -56,6 +58,7 @@
 					<!-- 这里配置的是输出到json文件中的内容，logstash.conf的filter可对这些字段做出处理 -->
 					<pattern>
 						{
+						"logdate": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
 						"logLevel": "%level",
 						"appName": "${springAppName:-}",
 						"traceId": "%X{X-B3-TraceId:-}",
@@ -66,7 +69,7 @@
 						"thread": "%thread",
 						"className": "%logger{40}",
 						"rest": "%message",
-						"stackTrace": "%exception{10}"
+						"stackTrace": "%exception"
 						}
 					</pattern>
 				</pattern>
